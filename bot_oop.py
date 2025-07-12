@@ -64,11 +64,11 @@ class Birthday(Field):
     def __init__(self, value):
         try:
             #def string_to_date(date_string: str):
-            parsed_date = datetime.strptime(value, "%d.%m.%Y").date()
+            datetime.strptime(value, "%d.%m.%Y")
         except ValueError:
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
         
-        super().__init__(parsed_date)
+        super().__init__(value)
 
 
 class Record:
@@ -130,7 +130,7 @@ class Record:
 
     def __str__(self):
         phones_str = ', '.join(str(p) for p in self.phones)
-        birthday_str = self.birthday.value.strftime("%d.%m.%Y") if self.birthday else "N/A"
+        birthday_str = self.birthday.value if self.birthday else "N/A"
         return f'Contact name: {self.name.value}; phones: {phones_str}; birthday: {birthday_str}'
     
 
@@ -174,8 +174,9 @@ class AddressBook(UserDict):
         for user in self.data.values():
             if not user.birthday:
                 continue
-             
-            birthday_this_year = user.birthday.value.replace(year=today.year)
+            
+            birthday_date = datetime.strptime(user.birthday.value, "%d.%m.%Y").date()
+            birthday_this_year = birthday_date.replace(year=today.year)
 
             """
             Перевірка, чи не буде 
@@ -203,8 +204,7 @@ class AddressBook(UserDict):
                 """
                 congratulation_date = self.adjust_for_weekend(birthday_this_year)
                 congratulation_date_str = self.date_to_string(congratulation_date)
-                birthdays_str = self.date_to_string(user.birthday.value)
-                upcoming_birthdays.append({"name": user.name.value, "birthday":birthdays_str, "congratulation_date": congratulation_date_str})
+                upcoming_birthdays.append({"name": user.name.value, "birthday":user.birthday.value, "congratulation_date": congratulation_date_str})
             else:
                 pass
             
@@ -245,7 +245,7 @@ def show_birthday(args, book:AddressBook):
     if not birthday:
         return f"Birthday is not set for {name}."
 
-    return birthday.value.strftime("%d.%m.%Y")
+    return birthday.value
 
 @input_error
 def birthdays(book:AddressBook): 
